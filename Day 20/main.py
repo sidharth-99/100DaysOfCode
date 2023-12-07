@@ -1,6 +1,8 @@
 import turtle as t
 import time
 from snake import Snake
+from food import Food
+from scoreboard import Scoreboard
 
 screen = t.Screen()
 screen.setup(height=600, width=600)
@@ -9,28 +11,37 @@ screen.bgcolor("black")
 screen.tracer(0)
 
 segments = []
-# snake =Snake()
-x=0
-for i in range(3):
-    seg = t.Turtle(shape = "square")
-    seg.color("white")
-    seg.penup()
-    seg.goto(x,0)
-    x-=20
-    segments.append(seg)
-    # seg.speed('slowest')
+snake =Snake()
+food = Food()
+scoreboard = Scoreboard()
+
 screen.update()
+screen.listen()
+screen.onkey(snake.up, "Up")
+screen.onkey(snake.down, "Down")
+screen.onkey(snake.left, "Left")
+screen.onkey(snake.right, "Right")
 
 game_is_on = True
 
 while game_is_on:
     screen.update()
     time.sleep(0.1)
-    for i in range(len(segments)-1,0,-1):
-        newx = segments[i-1].xcor()
-        newy = segments[i-1].ycor()
-        segments[i].goto(newx,newy)
-    
-    segments[0].forward(20)
+    snake.move()
+    if snake.head.distance(food)<15:
+        food.refresh()
+        scoreboard.score_update()
+        snake.grow()
+        
+    if snake.head.xcor()<=-280 or snake.head.xcor()>=280 or snake.head.ycor()<=-280 or snake.head.xcor()>=280:
+        game_is_on = False
+        scoreboard.gameover()
+
+    for segments in snake.segments[1::]:
+        # if segments == snake.head:
+        #     continue
+        if snake.head.distance(segments)<10:
+            game_is_on = False
+            scoreboard.gameover()
 
 screen.exitonclick()
